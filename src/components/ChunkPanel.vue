@@ -1,10 +1,3 @@
-<!--
-  Task 1 — Refactoring:
-    • fmtTime() is duplicated here, in SourcesView.vue, and in PartPanel.vue.
-      Extract to src/utils/format.js and import it.
-    • TYPE_LABELS below duplicates the same five keys as TYPE_COLORS in Graph.vue.
-      Unify into src/utils/types.js.
--->
 <template>
   <div class="chunk-panel">
     <div class="panel-header">
@@ -60,23 +53,8 @@
 <script setup>
   import { computed } from 'vue'
   import { marked } from 'marked'
-
-  // Task 1: extract to src/utils/types.js (also duplicated as TYPE_COLORS in Graph.vue)
-  const TYPE_LABELS = {
-    process_stage: 'Process Stage',
-    machine_element: 'Machine Element',
-    machine_part: 'Machine Part',
-    procedure: 'Procedure',
-    concept: 'Concept',
-  }
-
-  // Task 1: extract to src/utils/format.js (also in SourcesView.vue and PartPanel.vue)
-  function fmtTime(secs) {
-    if (secs == null) return null
-    const m = Math.floor(secs / 60)
-    const s = Math.floor(secs % 60)
-    return `${m}:${String(s).padStart(2, '0')}`
-  }
+  import { fmtTime } from '../utils/format'
+  import { TYPE_LABELS } from '../utils/types'
 
   function timeRange(start, end) {
     const s = fmtTime(start)
