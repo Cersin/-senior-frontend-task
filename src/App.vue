@@ -4,7 +4,9 @@
       <h1>Wiki Knowledge Graph</h1>
       <nav class="tabs">
         <button :class="['tab', { active: tab === 'graph' }]" @click="tab = 'graph'">Graph</button>
-        <button :class="['tab', { active: tab === 'sources' }]" @click="tab = 'sources'">Source Files</button>
+        <button :class="['tab', { active: tab === 'sources' }]" @click="tab = 'sources'">
+          Source Files
+        </button>
       </nav>
       <span v-if="tab === 'graph'" class="status">
         {{ graphData.nodes.length }} chunks · {{ graphData.links.length }} links
@@ -24,11 +26,7 @@
 
     <div v-if="tab === 'graph'" class="app-body">
       <div class="graph-pane">
-        <Graph
-          :data="graphData"
-          :selected-slug="selectedSlug"
-          @select="onSelect"
-        />
+        <Graph :data="graphData" :selected-slug="selectedSlug" @select="onSelect" />
       </div>
       <div :class="['detail-pane', { open: !!selectedSlug }]">
         <div v-if="chunkLoading" class="panel-loading">Loading…</div>
@@ -47,26 +45,29 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { graphData, getChunk } from './data/mock.js'
-import Graph from './components/Graph.vue'
-import ChunkPanel from './components/ChunkPanel.vue'
-import SourcesView from './components/SourcesView.vue'
+  import { ref, watch } from 'vue'
+  import { graphData, getChunk } from './data/mock.js'
+  import Graph from './components/Graph.vue'
+  import ChunkPanel from './components/ChunkPanel.vue'
+  import SourcesView from './components/SourcesView.vue'
 
-const tab = ref('graph')
-const selectedSlug = ref(null)
-const chunk = ref(null)
-const chunkLoading = ref(false)
+  const tab = ref('graph')
+  const selectedSlug = ref(null)
+  const chunk = ref(null)
+  const chunkLoading = ref(false)
 
-function onSelect(slug) {
-  selectedSlug.value = selectedSlug.value === slug ? null : slug
-}
+  function onSelect(slug) {
+    selectedSlug.value = selectedSlug.value === slug ? null : slug
+  }
 
-watch(selectedSlug, async (slug) => {
-  if (!slug) { chunk.value = null; return }
-  chunkLoading.value = true
-  await new Promise(r => setTimeout(r, 80))
-  chunk.value = getChunk(slug)
-  chunkLoading.value = false
-})
+  watch(selectedSlug, async (slug) => {
+    if (!slug) {
+      chunk.value = null
+      return
+    }
+    chunkLoading.value = true
+    await new Promise((r) => setTimeout(r, 80))
+    chunk.value = getChunk(slug)
+    chunkLoading.value = false
+  })
 </script>

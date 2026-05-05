@@ -58,39 +58,39 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { marked } from 'marked'
+  import { computed } from 'vue'
+  import { marked } from 'marked'
 
-// Task 1: extract to src/utils/types.js (also duplicated as TYPE_COLORS in Graph.vue)
-const TYPE_LABELS = {
-  process_stage:   'Process Stage',
-  machine_element: 'Machine Element',
-  machine_part:    'Machine Part',
-  procedure:       'Procedure',
-  concept:         'Concept',
-}
+  // Task 1: extract to src/utils/types.js (also duplicated as TYPE_COLORS in Graph.vue)
+  const TYPE_LABELS = {
+    process_stage: 'Process Stage',
+    machine_element: 'Machine Element',
+    machine_part: 'Machine Part',
+    procedure: 'Procedure',
+    concept: 'Concept',
+  }
 
-// Task 1: extract to src/utils/format.js (also in SourcesView.vue and PartPanel.vue)
-function fmtTime(secs) {
-  if (secs == null) return null
-  const m = Math.floor(secs / 60)
-  const s = Math.floor(secs % 60)
-  return `${m}:${String(s).padStart(2, '0')}`
-}
+  // Task 1: extract to src/utils/format.js (also in SourcesView.vue and PartPanel.vue)
+  function fmtTime(secs) {
+    if (secs == null) return null
+    const m = Math.floor(secs / 60)
+    const s = Math.floor(secs % 60)
+    return `${m}:${String(s).padStart(2, '0')}`
+  }
 
-function timeRange(start, end) {
-  const s = fmtTime(start)
-  const e = fmtTime(end)
-  return s ? ` · ${s} – ${e}` : ''
-}
+  function timeRange(start, end) {
+    const s = fmtTime(start)
+    const e = fmtTime(end)
+    return s ? ` · ${s} – ${e}` : ''
+  }
 
-const props = defineProps({
-  chunk: { type: Object, required: true },
-})
-const emit = defineEmits(['navigate', 'close'])
+  const props = defineProps({
+    chunk: { type: Object, required: true },
+  })
+  const emit = defineEmits(['navigate', 'close'])
 
-const typeLabel   = computed(() => TYPE_LABELS[props.chunk.type] || props.chunk.type)
-const outLinks    = computed(() => props.chunk.links.filter(l => l.direction === 'out'))
-const inLinks     = computed(() => props.chunk.links.filter(l => l.direction === 'in'))
-const parsedBody  = computed(() => marked.parse(props.chunk.body_markdown || ''))
+  const typeLabel = computed(() => TYPE_LABELS[props.chunk.type] || props.chunk.type)
+  const outLinks = computed(() => props.chunk.links.filter((l) => l.direction === 'out'))
+  const inLinks = computed(() => props.chunk.links.filter((l) => l.direction === 'in'))
+  const parsedBody = computed(() => marked.parse(props.chunk.body_markdown || ''))
 </script>
