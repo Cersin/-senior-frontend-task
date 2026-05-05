@@ -23,7 +23,7 @@ Aplikacja startuje pod adresem `http://localhost:5173`.
 src/
 ├── style.css          # globalny arkusz stylów (ciemny motyw)
 ├── App.vue            # główny komponent — header, zakładki, panel detali
-├── main.js            # punkt wejścia aplikacji
+├── main.ts            # punkt wejścia aplikacji
 ├── data/
 │   └── mock.js        # dane: 16 węzłów, 20 krawędzi, 3 źródła, transkrypty
 ├── components/
