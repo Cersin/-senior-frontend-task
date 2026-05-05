@@ -7,12 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "format": "prettier --write \"src/**/*.{ts,vue,css}\""
-
   },
   "dependencies": {
     "force-graph": "^1.43.5",
     "marked": "^13.0.0",
-    "vue": "^3.4.0"
+    "vue": "^3.4.0",
+    "vue-i18n": "^11.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.0",

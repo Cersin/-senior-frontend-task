@@ -1,0 +1,46 @@
+{
+  "app": {
+    "title": "Wiki Knowledge Graph",
+    "tabs": {
+      "graph": "Graph",
+      "sources": "Source Files"
+    },
+    "statusChunks": "{count} chunk | {count} chunks",
+    "statusLinks": "{count} link | {count} links",
+    "loading": "Loading…",
+    "selectNode": "Select a node to explore"
+  },
+  "chunkPanel": {
+    "relatedChunks": "Related Chunks",
+    "linksTo": "Links to",
+    "referencedBy": "Referenced by",
+    "sources": "Sources",
+    "types": {
+      "process_stage": "Process Stage",
+      "machine_element": "Machine Element",
+      "machine_part": "Machine Part",
+      "procedure": "Procedure",
+      "concept": "Concept"
+    }
+  },
+  "partPanel": {
+    "sourcePart": "Source Part"
+  },
+  "sourcesView": {
+    "sourceFiles": "{count} source file | {count} source files",
+    "parts": "{count} part | {count} parts",
+    "metadata": {
+      "path": "Path",
+      "sha256": "SHA-256"
+    },
+    "tableHeaders": {
+      "index": "#",
+      "title": "Title",
+      "start": "Start",
+      "end": "End",
+      "duration": "Duration",
+      "lang": "Lang"
+    }
+  }
+}
+

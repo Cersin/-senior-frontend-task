@@ -1,15 +1,19 @@
 <template>
   <div class="app">
     <header class="app-header">
-      <h1>Wiki Knowledge Graph</h1>
+      <h1>{{ $t('app.title') }}</h1>
       <nav class="tabs">
-        <button :class="['tab', { active: tab === 'graph' }]" @click="tab = 'graph'">Graph</button>
+        <button :class="['tab', { active: tab === 'graph' }]" @click="tab = 'graph'">
+          {{ $t('app.tabs.graph') }}
+        </button>
         <button :class="['tab', { active: tab === 'sources' }]" @click="tab = 'sources'">
-          Source Files
+          {{ $t('app.tabs.sources') }}
         </button>
       </nav>
       <span v-if="tab === 'graph'" class="status">
-        {{ graphData.nodes.length }} chunks · {{ graphData.links.length }} links
+        {{ $t('app.statusChunks', graphData.nodes.length, { count: graphData.nodes.length }) }}
+        ·
+        {{ $t('app.statusLinks', graphData.links.length, { count: graphData.links.length }) }}
       </span>
 
       <!--
@@ -22,6 +26,21 @@
         Keyboard: "/" focuses the input; Escape clears it.
         Hint: no re-init needed — the canvas loop already reads props every frame.
       -->
+
+      <div class="language-selector">
+        <button
+          :class="['lang-btn', { active: $i18n.locale === 'pl' }]"
+          @click="$i18n.locale = 'pl'"
+        >
+          PL
+        </button>
+        <button
+          :class="['lang-btn', { active: $i18n.locale === 'en' }]"
+          @click="$i18n.locale = 'en'"
+        >
+          EN
+        </button>
+      </div>
     </header>
 
     <div v-if="tab === 'graph'" class="app-body">
@@ -29,14 +48,14 @@
         <Graph :data="graphData" :selected-slug="selectedSlug" @select="onSelect" />
       </div>
       <div :class="['detail-pane', { open: !!selectedSlug }]">
-        <div v-if="chunkLoading" class="panel-loading">Loading…</div>
+        <div v-if="chunkLoading" class="panel-loading">{{ $t('app.loading') }}</div>
         <ChunkPanel
           v-else-if="chunk"
           :chunk="chunk"
           @navigate="selectedSlug = $event"
           @close="selectedSlug = null"
         />
-        <div v-else class="empty-state">Select a node to explore</div>
+        <div v-else class="empty-state">{{ $t('app.selectNode') }}</div>
       </div>
     </div>
 

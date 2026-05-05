@@ -13,9 +13,9 @@
       <div v-if="chunk.body_markdown" class="markdown-content" v-html="parsedBody" />
 
       <section v-if="outLinks.length || inLinks.length" class="panel-section">
-        <h3>Related Chunks</h3>
+        <h3>{{ $t('chunkPanel.relatedChunks') }}</h3>
         <div v-if="outLinks.length" class="link-group">
-          <h4>Links to</h4>
+          <h4>{{ $t('chunkPanel.linksTo') }}</h4>
           <ul class="link-list">
             <li v-for="l in outLinks" :key="l.slug">
               <button class="link-btn" @click="emit('navigate', l.slug)">{{ l.title }}</button>
@@ -24,7 +24,7 @@
           </ul>
         </div>
         <div v-if="inLinks.length" class="link-group">
-          <h4>Referenced by</h4>
+          <h4>{{ $t('chunkPanel.referencedBy') }}</h4>
           <ul class="link-list">
             <li v-for="l in inLinks" :key="l.slug">
               <button class="link-btn" @click="emit('navigate', l.slug)">{{ l.title }}</button>
@@ -35,7 +35,7 @@
       </section>
 
       <section v-if="chunk.sources.length" class="panel-section">
-        <h3>Sources</h3>
+        <h3>{{ $t('chunkPanel.sources') }}</h3>
         <ul class="source-list">
           <li v-for="(s, i) in chunk.sources" :key="i" class="source-item">
             <span class="source-name">{{ s.source_name }}</span>
@@ -52,9 +52,12 @@
 
 <script setup>
   import { computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import { marked } from 'marked'
   import { fmtTime } from '../utils/format'
   import { TYPE_LABELS } from '../utils/types'
+
+  const { t } = useI18n()
 
   function timeRange(start, end) {
     const s = fmtTime(start)
@@ -67,7 +70,10 @@
   })
   const emit = defineEmits(['navigate', 'close'])
 
-  const typeLabel = computed(() => TYPE_LABELS[props.chunk.type] || props.chunk.type)
+  const typeLabel = computed(() => {
+    const translationKey = TYPE_LABELS[props.chunk.type]
+    return translationKey ? t(translationKey) : props.chunk.type
+  })
   const outLinks = computed(() => props.chunk.links.filter((l) => l.direction === 'out'))
   const inLinks = computed(() => props.chunk.links.filter((l) => l.direction === 'in'))
   const parsedBody = computed(() => marked.parse(props.chunk.body_markdown || ''))

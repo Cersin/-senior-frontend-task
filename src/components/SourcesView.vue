@@ -2,7 +2,7 @@
   <div class="app-body">
     <div class="sources-view">
       <div class="sources-header">
-        {{ sources.length }} source file{{ sources.length !== 1 ? 's' : '' }}
+        {{ $t('sourcesView.sourceFiles', sources.length, { count: sources.length }) }}
       </div>
       <div class="sources-list">
         <div v-for="s in sources" :key="s.source_name" class="source-card">
@@ -10,7 +10,7 @@
             <div class="source-card-title">
               <span class="source-card-name">{{ s.source_name }}</span>
               <span class="source-card-meta">
-                {{ s.source_part_count }} part{{ s.source_part_count !== 1 ? 's' : '' }}
+                {{ $t('sourcesView.parts', s.source_part_count, { count: s.source_part_count }) }}
                 <template v-if="s.processor">
                   · {{ s.processor }} {{ s.processor_version }}</template
                 >
@@ -23,11 +23,11 @@
           <div v-if="expanded[s.source_name]" class="source-card-body">
             <div class="source-meta-grid">
               <template v-if="s.source_path">
-                <span class="meta-label">Path</span>
+                <span class="meta-label">{{ $t('sourcesView.metadata.path') }}</span>
                 <span class="meta-value">{{ s.source_path }}</span>
               </template>
               <template v-if="s.source_sha256">
-                <span class="meta-label">SHA-256</span>
+                <span class="meta-label">{{ $t('sourcesView.metadata.sha256') }}</span>
                 <span class="meta-value mono">{{ s.source_sha256 }}</span>
               </template>
             </div>
@@ -35,12 +35,12 @@
             <table v-if="s.parts.length" class="parts-table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Title</th>
-                  <th>Start</th>
-                  <th>End</th>
-                  <th>Duration</th>
-                  <th>Lang</th>
+                  <th>{{ $t('sourcesView.tableHeaders.index') }}</th>
+                  <th>{{ $t('sourcesView.tableHeaders.title') }}</th>
+                  <th>{{ $t('sourcesView.tableHeaders.start') }}</th>
+                  <th>{{ $t('sourcesView.tableHeaders.end') }}</th>
+                  <th>{{ $t('sourcesView.tableHeaders.duration') }}</th>
+                  <th>{{ $t('sourcesView.tableHeaders.lang') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -65,7 +65,7 @@
     </div>
 
     <div :class="['detail-pane', { open: !!selectedPart }]">
-      <div v-if="partLoading" class="panel-loading">Loading…</div>
+      <div v-if="partLoading" class="panel-loading">{{ $t('app.loading') }}</div>
       <PartPanel v-else-if="partData" :part="partData" @close="selectedPart = null" />
     </div>
   </div>

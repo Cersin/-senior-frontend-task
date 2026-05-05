@@ -2,7 +2,7 @@
   <div class="chunk-panel">
     <div class="panel-header">
       <div class="panel-title">
-        <span class="type-badge type-procedure">Source Part</span>
+        <span class="type-badge type-procedure">{{ $t('partPanel.sourcePart') }}</span>
         <h2>{{ part.title }}</h2>
         <p class="summary">
           {{ part.source_name }} · Part {{ part.part_index }}{{ timeRange }}{{ langSuffix }}

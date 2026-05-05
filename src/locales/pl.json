@@ -1,0 +1,46 @@
+{
+  "app": {
+    "title": "Wiki Knowledge Graph",
+    "tabs": {
+      "graph": "Graf",
+      "sources": "Pliki źródłowe"
+    },
+    "statusChunks": "{count} węzeł | {count} węzły | {count} węzłów",
+    "statusLinks": "{count} powiązanie | {count} powiązania | {count} powiązań",
+    "loading": "Ładowanie…",
+    "selectNode": "Wybierz węzeł aby go zbadać"
+  },
+  "chunkPanel": {
+    "relatedChunks": "Powiązane węzły",
+    "linksTo": "Odnośniki do",
+    "referencedBy": "Odwołania od",
+    "sources": "Źródła",
+    "types": {
+      "process_stage": "Etap procesu",
+      "machine_element": "Element maszyny",
+      "machine_part": "Część maszyny",
+      "procedure": "Procedura",
+      "concept": "Pojęcie"
+    }
+  },
+  "partPanel": {
+    "sourcePart": "Część źródła"
+  },
+  "sourcesView": {
+    "sourceFiles": "{count} plik źródłowy | {count} pliki źródłowe | {count} plików źródłowych",
+    "parts": "{count} część | {count} części | {count} części",
+    "metadata": {
+      "path": "Ścieżka",
+      "sha256": "SHA-256"
+    },
+    "tableHeaders": {
+      "index": "#",
+      "title": "Tytuł",
+      "start": "Start",
+      "end": "Koniec",
+      "duration": "Czas trwania",
+      "lang": "Język"
+    }
+  }
+}
+

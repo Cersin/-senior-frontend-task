@@ -1,12 +1,21 @@
-export const TYPE_LABELS = {
-  process_stage: 'Process Stage',
-  machine_element: 'Machine Element',
-  machine_part: 'Machine Part',
-  procedure: 'Procedure',
-  concept: 'Concept',
-} as const
+export const NODE_TYPES = [
+  'process_stage',
+  'machine_element',
+  'machine_part',
+  'procedure',
+  'concept',
+] as const
 
-export type NodeType = keyof typeof TYPE_LABELS
+export type NodeType = (typeof NODE_TYPES)[number]
+
+// Type labels - maps type key to i18n translation key
+export const TYPE_LABELS: Record<NodeType, string> = {
+  process_stage: 'chunkPanel.types.process_stage',
+  machine_element: 'chunkPanel.types.machine_element',
+  machine_part: 'chunkPanel.types.machine_part',
+  procedure: 'chunkPanel.types.procedure',
+  concept: 'chunkPanel.types.concept',
+}
 
 export const TYPE_COLORS: Record<NodeType, string> = {
   process_stage: '#4f8ef7',
