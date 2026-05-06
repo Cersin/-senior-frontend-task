@@ -41,6 +41,15 @@
       "duration": "Czas trwania",
       "lang": "Język"
     }
+  },
+  "graph": {
+    "pathButton": "Ścieżka",
+    "pathMode": {
+      "clickFirst": "Kliknij pierwszy węzeł…",
+      "clickSecond": "Kliknij drugi węzeł…",
+      "pathFound": "Ścieżka: {count} węzły",
+      "noPath": "Nie znaleziono ścieżki"
+    }
   }
 }
 

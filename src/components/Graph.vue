@@ -1,8 +1,32 @@
-<!--
-  Task 2 — Algorithm: see the TODO block inside <script setup>.
--->
 <template>
-  <div ref="containerEl" style="width: 100%; height: 100%" />
+  <div style="width: 100%; height: 100%; position: relative">
+    <!-- Canvas Container -->
+    <div ref="containerEl" style="width: 100%; height: 100%" />
+
+    <!-- Path Mode Button (overlay) -->
+    <button
+      :class="['path-mode-btn', { active: pathModeActive }]"
+      @click="pathModeActive = !pathModeActive"
+      :title="$t('graph.pathMode.clickFirst')"
+    >
+      {{ $t('graph.pathButton') }}
+    </button>
+
+    <!-- Path Status Display (overlay) -->
+    <div v-if="pathModeActive" class="path-status">
+      <span v-if="!pathStart">{{ $t('graph.pathMode.clickFirst') }}</span>
+      <span v-else-if="!pathEnd">{{ $t('graph.pathMode.clickSecond') }}</span>
+      <span v-else-if="currentPath.size > 0">{{
+        $t('graph.pathMode.pathFound', { count: currentPath.size })
+      }}</span>
+      <span v-else-if="pathNotFound" class="no-path">{{ $t('graph.pathMode.noPath') }}</span>
+    </div>
+
+    <!-- No Path Found Overlay -->
+    <div v-if="pathNotFound && pathModeActive" class="no-path-overlay">
+      <div class="no-path-message">{{ $t('graph.pathMode.noPath') }}</div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -21,41 +45,198 @@
   const containerEl = ref(null)
   let fg = null
 
+  const pathModeActive = ref(false)
+  const pathStart = ref(null)
+  const pathEnd = ref(null)
+  const currentPath = ref(new Set())
+  const pathLinkIds = ref(new Set())
+  const pathNotFound = ref(false)
+
+  function getNodeSlug(endpoint) {
+    return typeof endpoint === 'string' ? endpoint : endpoint?.slug
+  }
+
+  function generateLinkKey(sourceSlug, targetSlug) {
+    // Stable key for undirected edges (always sorted order)
+    const sorted = [sourceSlug, targetSlug].sort()
+    return sorted.join('→')
+  }
+
+  function buildAdjacencyList(links) {
+    const adj = new Map()
+    for (const link of links) {
+      const source = getNodeSlug(link.source)
+      const target = getNodeSlug(link.target)
+      if (!source || !target) continue
+
+      if (!adj.has(source)) adj.set(source, [])
+      if (!adj.has(target)) adj.set(target, [])
+
+      adj.get(source).push({ slug: target, linkKey: generateLinkKey(source, target) })
+      adj.get(target).push({ slug: source, linkKey: generateLinkKey(source, target) })
+    }
+    return adj
+  }
+
+  function runBFS(startSlug, endSlug) {
+    if (!startSlug || !endSlug || startSlug === endSlug) {
+      currentPath.value = new Set()
+      pathLinkIds.value = new Set()
+      return
+    }
+
+    const adj = buildAdjacencyList(props.data.links)
+    const visited = new Set()
+    const predecessors = new Map()
+    const queue = [startSlug]
+    visited.add(startSlug)
+
+    let found = false
+    while (queue.length > 0 && !found) {
+      const current = queue.shift()
+      if (current === endSlug) {
+        found = true
+        break
+      }
+
+      const neighbors = adj.get(current) || []
+      for (const { slug: neighbor } of neighbors) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor)
+          predecessors.set(neighbor, current)
+          queue.push(neighbor)
+        }
+      }
+    }
+
+    if (!found) {
+      currentPath.value = new Set()
+      pathLinkIds.value = new Set()
+      pathNotFound.value = true
+      return
+    }
+
+    const path = []
+    let node = endSlug
+    while (node) {
+      path.unshift(node)
+      node = predecessors.get(node)
+    }
+
+    const linkIds = new Set()
+    for (let i = 0; i < path.length - 1; i++) {
+      const key = generateLinkKey(path[i], path[i + 1])
+      linkIds.add(key)
+    }
+
+    currentPath.value = new Set(path)
+    pathLinkIds.value = linkIds
+    pathNotFound.value = false
+  }
+
+  function resetPath() {
+    pathStart.value = null
+    pathEnd.value = null
+    currentPath.value = new Set()
+    pathLinkIds.value = new Set()
+    pathNotFound.value = false
+  }
+
+  function onNodeClickHandler(node) {
+    if (!pathModeActive.value) {
+      emit('select', node.slug)
+      return
+    }
+
+    if (!pathStart.value) {
+      pathStart.value = node.slug
+    } else if (!pathEnd.value) {
+      pathEnd.value = node.slug
+      runBFS(pathStart.value, pathEnd.value)
+    } else {
+      resetPath()
+      pathStart.value = node.slug
+    }
+
+    // Force canvas redraw after path state change
+    fg?._tick?.()
+  }
+
   function nodeColor(node) {
     return TYPE_COLORS[node.type] ?? DEFAULT_COLOR
   }
 
+  function isNodeOnPath(slug) {
+    return currentPath.value.has(slug)
+  }
+
+  function isLinkOnPath(link) {
+    const sourceSlug = getNodeSlug(link.source)
+    const targetSlug = getNodeSlug(link.target)
+    if (!sourceSlug || !targetSlug) return false
+    const linkKey = generateLinkKey(sourceSlug, targetSlug)
+    return pathLinkIds.value.has(linkKey)
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Watchers
+  // ─────────────────────────────────────────────────────────────────────────────
+  watch(pathModeActive, (active) => {
+    if (!active) {
+      resetPath()
+    }
+
+    fg?._tick?.()
+  })
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Mount & Unmount
+  // ─────────────────────────────────────────────────────────────────────────────
   onMounted(() => {
     fg = ForceGraph()(containerEl.value)
       .graphData(props.data)
       .nodeId('slug')
       .nodeLabel('title')
-      .linkColor(() => '#334455')
-      .linkWidth(1)
+      .linkColor((link) => {
+        if (!pathModeActive.value || currentPath.value.size === 0) return '#334455'
+        return isLinkOnPath(link) ? '#ffd700' : '#1a3a52'
+      })
+      .linkWidth((link) => {
+        if (!pathModeActive.value || currentPath.value.size === 0) return 1
+        return isLinkOnPath(link) ? 2.5 : 0.5
+      })
       .linkDirectionalArrowLength(3)
       .linkDirectionalArrowRelPos(1)
       .linkLabel('label')
       .backgroundColor('#1a1a2e')
-      .onNodeClick((node) => emit('select', node.slug))
+      .onNodeClick(onNodeClickHandler)
       .nodeCanvasObject((node, ctx, globalScale) => {
         const isSelected = node.slug === props.selectedSlug
+        const isOnPath = isNodeOnPath(node.slug)
+        const pathActive = pathModeActive.value && currentPath.value.size > 0
+
         // Task 3: compute match opacity here using props.filterQuery
         // const isMatch = !props.filterQuery ||
         //   node.title.toLowerCase().includes(props.filterQuery.toLowerCase())
         // ctx.globalAlpha = isMatch ? 1 : 0.15
 
+        // Compute opacity based on path mode
+        if (pathActive) {
+          ctx.globalAlpha = isOnPath ? 1 : 0.2
+        }
+
         const color = nodeColor(node)
-        const r = isSelected ? 7 : 4
+        const r = isSelected ? 7 : isOnPath ? 6 : 4
 
         ctx.beginPath()
         ctx.arc(node.x, node.y, r, 0, 2 * Math.PI)
         ctx.fillStyle = color
         ctx.fill()
 
-        if (isSelected) {
+        if (isSelected || isOnPath) {
           ctx.beginPath()
           ctx.arc(node.x, node.y, r + 2.5, 0, 2 * Math.PI)
-          ctx.strokeStyle = '#ffffff'
+          ctx.strokeStyle = isOnPath ? '#ffd700' : '#ffffff'
           ctx.lineWidth = 1.5
           ctx.stroke()
         }
@@ -69,6 +250,7 @@
         }
 
         // Task 3: reset ctx.globalAlpha = 1 after drawing each node
+        ctx.globalAlpha = 1
       })
       .nodeCanvasObjectMode(() => 'replace')
 
@@ -79,7 +261,10 @@
       fg?.width(e.contentRect.width).height(e.contentRect.height)
     })
     ro.observe(containerEl.value)
-    onUnmounted(() => ro.disconnect())
+
+    onUnmounted(() => {
+      ro.disconnect()
+    })
   })
 
   onUnmounted(() => {
@@ -89,7 +274,10 @@
 
   watch(
     () => props.data,
-    (d) => fg?.graphData(d)
+    (d) => {
+      fg?.graphData(d)
+      resetPath()
+    }
   )
 
   watch(
@@ -100,26 +288,73 @@
       if (node?.x != null) fg.centerAt(node.x, node.y, 400)
     }
   )
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // TODO Task 2 — Shortest Path (BFS)
-  //
-  // Add a "Path" toggle button (above or overlaid on the graph). When active:
-  //
-  //   1. Track a `pathStart` and `pathEnd` slug via two successive node clicks.
-  //   2. Build an adjacency list from props.data.links (treat edges as undirected).
-  //   3. Run BFS from pathStart to pathEnd; record the predecessor map to
-  //      reconstruct the path.
-  //   4. Expose the path as a Set of slugs and a Set of link ids.
-  //   5. In nodeCanvasObject: full opacity + bright ring for path nodes;
-  //      dim (opacity 0.2) for all others.
-  //   6. In linkColor / linkWidth: highlight path edges; dim the rest.
-  //   7. If no path exists, show a "No path found" overlay.
-  //   8. Toggling Path Mode off resets all state.
-  //
-  // Constraints worth thinking about:
-  //   • force-graph mutates link objects (source/target become node refs).
-  //     Your adjacency list must handle both string slugs and node objects.
-  //   • BFS on the canvas thread is synchronous; keep it O(V + E).
-  // ─────────────────────────────────────────────────────────────────────────────
 </script>
+
+<style scoped>
+  .path-mode-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 8px 16px;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    border: 1px solid #7f8c8d;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .path-mode-btn:hover {
+    background-color: #34495e;
+    border-color: #95a5a6;
+  }
+
+  .path-mode-btn.active {
+    background-color: #3498db;
+    border-color: #2980b9;
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+  }
+
+  .path-status {
+    position: absolute;
+    top: 12px;
+    left: 100px;
+    z-index: 100;
+    padding: 8px 12px;
+    background-color: rgba(44, 62, 80, 0.85);
+    color: #ecf0f1;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  .path-status .no-path {
+    color: #e74c3c;
+  }
+
+  .no-path-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .no-path-message {
+    padding: 24px 32px;
+    background-color: #c0392b;
+    color: #ffffff;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+</style>

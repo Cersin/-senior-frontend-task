@@ -41,6 +41,15 @@
       "duration": "Duration",
       "lang": "Lang"
     }
+  },
+  "graph": {
+    "pathButton": "Path",
+    "pathMode": {
+      "clickFirst": "Click first node…",
+      "clickSecond": "Click second node…",
+      "pathFound": "Path: {count} nodes",
+      "noPath": "No path found"
+    }
   }
 }
 
