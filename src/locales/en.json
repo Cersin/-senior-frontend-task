@@ -8,7 +8,12 @@
     "statusChunks": "{count} chunk | {count} chunks",
     "statusLinks": "{count} link | {count} links",
     "loading": "Loading…",
-    "selectNode": "Select a node to explore"
+    "selectNode": "Select a node to explore",
+    "search": {
+      "placeholder": "Search nodes (press / to focus)",
+      "matches": "{count} match | {count} matches",
+      "clear": "Clear search"
+    }
   },
   "chunkPanel": {
     "relatedChunks": "Related Chunks",

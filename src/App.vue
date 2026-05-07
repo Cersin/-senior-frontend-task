@@ -16,16 +16,7 @@
         {{ $t('app.statusLinks', graphData.links.length, { count: graphData.links.length }) }}
       </span>
 
-      <!--
-        TODO Task 3 — Live Graph Search
-        Add a search <input> here. Pass the query string down to <Graph> as a
-        new `filterQuery` prop. When the query is non-empty:
-          • Nodes whose title matches (case-insensitive) render at full opacity.
-          • All other nodes are dimmed to ~20% opacity inside nodeCanvasObject.
-          • Show "N matches" count here and an × clear button.
-        Keyboard: "/" focuses the input; Escape clears it.
-        Hint: no re-init needed — the canvas loop already reads props every frame.
-      -->
+      <SearchBox v-if="tab === 'graph'" v-model="filterQuery" />
 
       <div class="language-selector">
         <button
@@ -45,7 +36,12 @@
 
     <div v-if="tab === 'graph'" class="app-body">
       <div class="graph-pane">
-        <Graph :data="graphData" :selected-slug="selectedSlug" @select="onSelect" />
+        <Graph
+          :data="graphData"
+          :selected-slug="selectedSlug"
+          :filter-query="filterQuery"
+          @select="onSelect"
+        />
       </div>
       <div :class="['detail-pane', { open: !!selectedSlug }]">
         <div v-if="chunkLoading" class="panel-loading">{{ $t('app.loading') }}</div>
@@ -64,16 +60,19 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue'
+  import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
   import { graphData, getChunk } from './data/mock.js'
   import Graph from './components/Graph.vue'
   import ChunkPanel from './components/ChunkPanel.vue'
   import SourcesView from './components/SourcesView.vue'
+  import SearchBox from './components/SearchBox.vue'
 
   const tab = ref('graph')
   const selectedSlug = ref(null)
   const chunk = ref(null)
   const chunkLoading = ref(false)
+  const filterQuery = ref('')
+  const searchInputEl = ref(null)
 
   function onSelect(slug) {
     selectedSlug.value = selectedSlug.value === slug ? null : slug
@@ -89,4 +88,86 @@
     chunk.value = getChunk(slug)
     chunkLoading.value = false
   })
+
+  function handleKeyDown(event) {
+    // "/" to focus search input
+    if (event.key === '/' && tab.value === 'graph') {
+      const activeEl = document.activeElement
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.contentEditable === 'true')
+      ) {
+        return
+      }
+      event.preventDefault()
+      searchInputEl.value?.focus()
+    }
+    // Escape to clear search (only if search input is focused)
+    if (event.key === 'Escape' && searchInputEl.value === document.activeElement) {
+      filterQuery.value = ''
+      searchInputEl.value?.blur()
+    }
+  }
+
+  onMounted(() => {
+    window.addEventListener('keydown', handleKeyDown)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeyDown)
+  })
 </script>
+
+<style scoped>
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .search-input {
+    background-color: #2c3e50;
+    border: 1px solid #7f8c8d;
+    border-radius: 4px;
+    color: #ecf0f1;
+    padding: 6px 8px;
+    font-size: 12px;
+    min-width: 150px;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input::placeholder {
+    color: #95a5a6;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+  }
+
+  .search-count {
+    color: #bdc3c7;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .search-clear {
+    background-color: transparent;
+    border: none;
+    color: #ecf0f1;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 16px;
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+  }
+
+  .search-clear:hover {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+  }
+</style>

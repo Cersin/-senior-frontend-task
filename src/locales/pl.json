@@ -8,7 +8,12 @@
     "statusChunks": "{count} węzeł | {count} węzły | {count} węzłów",
     "statusLinks": "{count} powiązanie | {count} powiązania | {count} powiązań",
     "loading": "Ładowanie…",
-    "selectNode": "Wybierz węzeł aby go zbadać"
+    "selectNode": "Wybierz węzeł aby go zbadać",
+    "search": {
+      "placeholder": "Szukaj węzłów (naciśnij /)",
+      "matches": "{count} dopasowanie | {count} dopasowania | {count} dopasowań",
+      "clear": "Wyczyść wyszukiwanie"
+    }
   },
   "chunkPanel": {
     "relatedChunks": "Powiązane węzły",
@@ -52,4 +57,3 @@
     }
   }
 }
-

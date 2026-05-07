@@ -16,7 +16,7 @@ const i18n = createI18n({
   },
   pluralRules: {
     pl: polishPluralRules,
-  }src
+  },
 })
 
 const app = createApp(App)

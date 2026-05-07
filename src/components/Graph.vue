@@ -30,15 +30,14 @@
 </template>
 
 <script setup>
-  import { ref, watch, onMounted, onUnmounted } from 'vue'
+  import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
   import ForceGraph from 'force-graph'
   import { TYPE_COLORS, DEFAULT_COLOR } from '../utils/types'
 
   const props = defineProps({
     data: { type: Object, default: () => ({ nodes: [], links: [] }) },
     selectedSlug: { type: String, default: null },
-    // Task 3: add filterQuery prop here and use it in nodeCanvasObject
-    // filterQuery: { type: String, default: '' },
+    filterQuery: { type: String, default: '' },
   })
   const emit = defineEmits(['select'])
 
@@ -51,6 +50,15 @@
   const currentPath = ref(new Set())
   const pathLinkIds = ref(new Set())
   const pathNotFound = ref(false)
+
+  // Pre-compute matching node slugs instead of searching per render
+  const matchingNodeSlugs = computed(() => {
+    const query = props.filterQuery?.trim().toLowerCase()
+    if (!query) return new Set()
+    return new Set(
+      props.data.nodes.filter((n) => n.title.toLowerCase().includes(query)).map((n) => n.slug)
+    )
+  })
 
   function getNodeSlug(endpoint) {
     return typeof endpoint === 'string' ? endpoint : endpoint?.slug
@@ -158,7 +166,6 @@
       pathStart.value = node.slug
     }
 
-    // Force canvas redraw after path state change
     fg?._tick?.()
   }
 
@@ -189,6 +196,13 @@
     fg?._tick?.()
   })
 
+  watch(
+    () => props.filterQuery,
+    () => {
+      fg?._tick?.()
+    }
+  )
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Mount & Unmount
   // ─────────────────────────────────────────────────────────────────────────────
@@ -215,14 +229,14 @@
         const isOnPath = isNodeOnPath(node.slug)
         const pathActive = pathModeActive.value && currentPath.value.size > 0
 
-        // Task 3: compute match opacity here using props.filterQuery
-        // const isMatch = !props.filterQuery ||
-        //   node.title.toLowerCase().includes(props.filterQuery.toLowerCase())
-        // ctx.globalAlpha = isMatch ? 1 : 0.15
+        // Task 3: Use pre-computed matching set (optimized)
+        const isMatch = matchingNodeSlugs.value.size === 0 || matchingNodeSlugs.value.has(node.slug)
 
-        // Compute opacity based on path mode
+        // Opacity priority: path mode > search mode
         if (pathActive) {
           ctx.globalAlpha = isOnPath ? 1 : 0.2
+        } else if (matchingNodeSlugs.value.size > 0) {
+          ctx.globalAlpha = isMatch ? 1 : 0.2
         }
 
         const color = nodeColor(node)
@@ -249,7 +263,6 @@
           ctx.fillText(node.title, node.x, node.y + r + fontSize + 1)
         }
 
-        // Task 3: reset ctx.globalAlpha = 1 after drawing each node
         ctx.globalAlpha = 1
       })
       .nodeCanvasObjectMode(() => 'replace')
