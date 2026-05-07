@@ -16,7 +16,12 @@
         {{ $t('app.statusLinks', graphData.links.length, { count: graphData.links.length }) }}
       </span>
 
-      <SearchBox v-if="tab === 'graph'" v-model="filterQuery" />
+      <SearchBox
+        v-if="tab === 'graph'"
+        ref="searchBoxEl"
+        v-model="filterQuery"
+        :match-count="matchCount"
+      />
 
       <div class="language-selector">
         <button
@@ -72,7 +77,7 @@
   const chunk = ref(null)
   const chunkLoading = ref(false)
   const filterQuery = ref('')
-  const searchInputEl = ref(null)
+  const searchBoxEl = ref(null)
 
   function onSelect(slug) {
     selectedSlug.value = selectedSlug.value === slug ? null : slug
@@ -89,6 +94,12 @@
     chunkLoading.value = false
   })
 
+  const matchCount = computed(() => {
+    const query = filterQuery.value.trim().toLowerCase()
+    if (!query) return 0
+    return graphData.nodes.filter((n) => n.title.toLowerCase().includes(query)).length
+  })
+
   function handleKeyDown(event) {
     // "/" to focus search input
     if (event.key === '/' && tab.value === 'graph') {
@@ -102,12 +113,7 @@
         return
       }
       event.preventDefault()
-      searchInputEl.value?.focus()
-    }
-    // Escape to clear search (only if search input is focused)
-    if (event.key === 'Escape' && searchInputEl.value === document.activeElement) {
-      filterQuery.value = ''
-      searchInputEl.value?.blur()
+      searchBoxEl.value?.focus()
     }
   }
 
@@ -119,55 +125,3 @@
     window.removeEventListener('keydown', handleKeyDown)
   })
 </script>
-
-<style scoped>
-  .search-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 12px;
-  }
-
-  .search-input {
-    background-color: #2c3e50;
-    border: 1px solid #7f8c8d;
-    border-radius: 4px;
-    color: #ecf0f1;
-    padding: 6px 8px;
-    font-size: 12px;
-    min-width: 150px;
-    transition: border-color 0.2s ease;
-  }
-
-  .search-input::placeholder {
-    color: #95a5a6;
-  }
-
-  .search-input:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
-  }
-
-  .search-count {
-    color: #bdc3c7;
-    font-size: 11px;
-    white-space: nowrap;
-  }
-
-  .search-clear {
-    background-color: transparent;
-    border: none;
-    color: #ecf0f1;
-    cursor: pointer;
-    padding: 4px 6px;
-    font-size: 16px;
-    border-radius: 2px;
-    transition: background-color 0.2s ease;
-  }
-
-  .search-clear:hover {
-    background-color: rgba(231, 76, 60, 0.2);
-    color: #e74c3c;
-  }
-</style>
